@@ -1,3 +1,7 @@
+# Submission for "Pong" in "Introduction to Interactive Programming in Python (Part 1)"
+# Cliff Nelson
+# August 2, 2018
+
 # Implementation of classic arcade game Pong
 import simplegui
 import random
