@@ -89,8 +89,8 @@ def draw(canvas):
     
     # draw scores
     score_width = frame.get_canvas_textwidth(str(paddle1_score), 40)
-    canvas.draw_text(str(paddle1_score), ((WIDTH / 2) - score_width - 5, 40), 40, 'White')
-    canvas.draw_text(str(paddle2_score), ((WIDTH / 2) + 5, 40), 40, 'White')
+    canvas.draw_text(str(paddle1_score), ((WIDTH / 2) - score_width - 50, 60), 40, 'White')
+    canvas.draw_text(str(paddle2_score), ((WIDTH / 2) + 50, 60), 40, 'White')
         
 def keydown(key):
     global paddle1_vel, paddle2_vel
