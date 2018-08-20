@@ -1,0 +1,47 @@
+"""
+Submission for "Merge function for 2048 game" in "Principles of Computing (Part 1)"
+Cliff Nelson
+August 19, 2018
+"""
+
+def merge(line):
+    """
+    Function that merges a single row or column in 2048.
+    """
+    # remove zeros from input line and store as no_zeros_line
+    no_zeros_line = []
+    for element in line:
+        if element != 0:
+            no_zeros_line.append(element)
+    
+    # DESCRIBE
+    output_line = [0] * len(line)
+    output_index = 0
+    for index in range(0, len(no_zeros_line)):
+        if len(no_zeros_line) == 1:
+            output_line[output_index] = no_zeros_line[0]
+        elif index == len(no_zeros_line) - 1:
+            output_line[output_index] = no_zeros_line[index]
+        elif no_zeros_line[index] == 0:
+            pass
+        elif no_zeros_line[index] == no_zeros_line[index + 1]:
+            output_line[output_index] = no_zeros_line[index] * 2
+            no_zeros_line[index] = 0
+            no_zeros_line[index + 1] = 0
+            output_index += 1
+        else:
+            output_line[output_index] = no_zeros_line[index]
+            no_zeros_line[index] = 0
+            output_index += 1
+        
+    return output_line
+
+# tests
+# print merge([2, 0, 2, 2]) # expect [4, 2, 0, 0]
+# print merge([2, 0, 2, 4]) # expect [4, 4, 0, 0]
+# print merge([0, 0, 2, 2]) # expect [4, 0, 0, 0]
+# print merge([2, 2, 0, 0]) # expect [4, 0, 0, 0]
+# print merge([2, 2, 2, 2]) # expect [4, 4, 0, 0]
+# print merge([4, 4, 2, 0, 0]) # expect [8, 2, 0, 0, 0]
+# print merge([8, 16, 16, 8]) # expect [8, 32, 8, 0]
+# print merge([0, 0, 0, 0]) # expect [0, 0, 0, 0]
