@@ -1,41 +1,55 @@
 """
 Submission for "Merge function for 2048 game" in "Principles of Computing (Part 1)"
 Cliff Nelson
-August 19, 2018
+Created August 19, 2018
+Updated August 27, 2018 to improve comments
 """
 
 def merge(line):
     """
-    Function that merges a single row or column in 2048.
+    Helper function that merges a single row or column in 2048
     """
+    
     # remove zeros from input line and store as no_zeros_line
     no_zeros_line = []
     for element in line:
         if element != 0:
             no_zeros_line.append(element)
     
-    # DESCRIBE
+    # initialize output_line as all zeros and
+    # handle easy cases of zero row and row with one non-zero element
     output_line = [0] * len(line)
     output_index = 0
+    if len(no_zeros_line) == 0:
+        return output_line
+    elif len(no_zeros_line) == 1:
+        output_line[output_index] = no_zeros_line[0]
+        return output_line
+    
+    # iterate over no_zeros_line and merge numbers where appropriate
     for index in range(0, len(no_zeros_line)):
-        if len(no_zeros_line) == 1:
-            output_line[output_index] = no_zeros_line[0]
-        elif index == len(no_zeros_line) - 1:
+        # if last element of no_zeros line, append to output at output_index
+        if index == len(no_zeros_line) - 1:
             output_line[output_index] = no_zeros_line[index]
+        # if no_zeros_line element is 0, skip; this only happens when merged with prior num
         elif no_zeros_line[index] == 0:
             pass
+        # if matching numbers in no_zeros_line -> combine, add to output_line, and
+        # increment output_index
         elif no_zeros_line[index] == no_zeros_line[index + 1]:
             output_line[output_index] = no_zeros_line[index] * 2
             no_zeros_line[index] = 0
             no_zeros_line[index + 1] = 0
             output_index += 1
+        # if adjacent numbers in no_zeros_line do not match -> add to output_line
+        # and increment output_index
         else:
             output_line[output_index] = no_zeros_line[index]
             no_zeros_line[index] = 0
             output_index += 1
-        
-    return output_line
 
+    return output_line
+    
 # tests
 # print merge([2, 0, 2, 2]) # expect [4, 2, 0, 0]
 # print merge([2, 0, 2, 4]) # expect [4, 4, 0, 0]
