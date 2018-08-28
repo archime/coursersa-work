@@ -1,0 +1,189 @@
+"""
+Submission for "2048 (Full)" in "Principles of Computing (Part 1)"
+Cliff Nelson
+Created August 27, 2018
+"""
+
+import poc_2048_gui, random
+
+# Directions, DO NOT MODIFY
+UP = 1
+DOWN = 2
+LEFT = 3
+RIGHT = 4
+
+# Offsets for computing tile indices in each direction.
+# DO NOT MODIFY this dictionary.
+OFFSETS = {UP: (1, 0),
+           DOWN: (-1, 0),
+           LEFT: (0, 1),
+           RIGHT: (0, -1)}
+
+def merge(line):
+    """
+    Helper function that merges a single row or column in 2048
+    """
+    
+    # remove zeros from input line and store as no_zeros_line
+    no_zeros_line = []
+    for element in line:
+        if element != 0:
+            no_zeros_line.append(element)
+    
+    # initialize output_line as all zeros and
+    # handle easy cases of zero row and row with one non-zero element
+    output_line = [0] * len(line)
+    output_index = 0
+    if len(no_zeros_line) == 0:
+        return output_line
+    elif len(no_zeros_line) == 1:
+        output_line[output_index] = no_zeros_line[0]
+        return output_line
+    
+    # iterate over no_zeros_line and merge numbers where appropriate
+    for index in range(0, len(no_zeros_line)):
+        # if last element of no_zeros line, append to output at output_index
+        if index == len(no_zeros_line) - 1:
+            output_line[output_index] = no_zeros_line[index]
+        # if no_zeros_line element is 0, skip; this only happens when merged with prior num
+        elif no_zeros_line[index] == 0:
+            pass
+        # if matching numbers in no_zeros_line -> combine, add to output_line, and
+        # increment output_index
+        elif no_zeros_line[index] == no_zeros_line[index + 1]:
+            output_line[output_index] = no_zeros_line[index] * 2
+            no_zeros_line[index] = 0
+            no_zeros_line[index + 1] = 0
+            output_index += 1
+        # if adjacent numbers in no_zeros_line do not match -> add to output_line
+        # and increment output_index
+        else:
+            output_line[output_index] = no_zeros_line[index]
+            no_zeros_line[index] = 0
+            output_index += 1
+    
+    return output_line
+
+def create_zero_grid(height, width):
+    """
+    Helper function to create grid of zeros with specified height, width
+    """
+    zero_grid = []
+    for dummy_row in range(0, height):
+        zero_grid.append([0] * width)
+    return zero_grid
+
+class TwentyFortyEight:
+    """
+    Class to run the game logic.
+    """
+
+    def __init__(self, grid_height, grid_width):
+        self._grid_height = grid_height
+        self._grid_width = grid_width
+        self.reset()
+        self._initial_tiles = {UP:   [(0, j) for j in range(0, self._grid_width)],
+                              DOWN:  [(self._grid_height - 1, j) for j in range(0, self._grid_width)],
+                              LEFT:  [(i, 0) for i in range(0, self._grid_height)],
+                              RIGHT: [(i, self._grid_width - 1) for i in range(0, self._grid_height)]}
+        
+    def reset(self):
+        """
+        Reset the game so the grid is empty except for two
+        initial tiles.
+        """
+        self._grid = create_zero_grid(self._grid_height, self._grid_width)
+        self.new_tile()
+        self.new_tile()
+
+    def __str__(self):
+        """
+        Return a string representation of the grid for debugging.
+        """
+        return str(self._grid)
+
+    def get_grid_height(self):
+        """
+        Get the height of the board.
+        """
+        return self._grid_height
+
+    def get_grid_width(self):
+        """
+        Get the width of the board.
+        """
+        return self._grid_width
+
+    def move(self, direction):
+        """
+        Move all tiles in the given direction and add
+        a new tile if any tiles moved.
+        """
+        # Initial variables
+        offset = OFFSETS[direction]
+        changed = False
+        
+        # Set length of rows/cols to merge
+        if direction == UP or direction == DOWN:
+            merge_len = self._grid_height
+        else:
+            merge_len = self._grid_width
+        
+        # Merge cells 
+        for tile in self._initial_tiles[direction]:
+            
+            # Construct list to merge
+            merge_list = []
+            for index in range(0, merge_len):
+                merge_list.append(self._grid[tile[0] + index * offset[0]][tile[1] + index * offset[1]])
+            
+            # Merge items in list
+            merge_list = merge(merge_list)
+            
+            # Edit self._grid based on list merge
+            for index in range(0, merge_len):
+                if self._grid[tile[0] + index * offset[0]][tile[1] + index * offset[1]] != merge_list[index]:
+                    changed = True
+                self._grid[tile[0] + index * offset[0]][tile[1] + index * offset[1]] = merge_list[index]
+                    
+        # If changed add new tile 
+        if changed:
+            self.new_tile()
+
+    def new_tile(self):
+        """
+        Create a new tile in a randomly selected empty
+        square.  The tile should be 2 90% of the time and
+        4 10% of the time.
+        """
+        # List out empty tiles
+        zero_tiles = []
+        for row in range(0, self._grid_height):
+            for col in range(0, self._grid_width):
+                if self._grid[row][col] == 0:
+                    zero_tiles.append([row, col])
+        
+        # Pick new tile value 2 or 4 with required prob
+        if random.randrange(0, 10) == 0:
+            tile_value = 4
+        else:
+            tile_value = 2
+        
+        # Assigne new tile value to random empty tile
+        random_empty = random.choice(zero_tiles)
+        self._grid[random_empty[0]][random_empty[1]] = tile_value
+
+    def set_tile(self, row, col, value):
+        """
+        Set the tile at position row, col to have the given value.
+        """
+        self._grid[row][col] = value
+
+    def get_tile(self, row, col):
+        """
+        Return the value of the tile at position row, col.
+        """
+        return self._grid[row][col]
+
+
+poc_2048_gui.run_gui(TwentyFortyEight(4, 4))
