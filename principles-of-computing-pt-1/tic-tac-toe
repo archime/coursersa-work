@@ -1,0 +1,105 @@
+"""
+Submission for "Monte Carlo Tic-Tac-Toe Player" 
+in "Principles of Computing (Part 1)"
+Cliff Nelson
+Created August 29, 2018
+"""
+
+import random
+import poc_ttt_gui
+import poc_ttt_provided as provided
+
+# Constants for Monte Carlo simulator
+# You may change the values of these constants as desired, but
+# do not change their names.
+NTRIALS = 90        # Number of trials to run
+SCORE_CURRENT = 1.0 # Score for squares played by the current player
+SCORE_OTHER = 1.5   # Score for squares played by the other player
+    
+# Add your functions here.
+
+def mc_trial(board, player):
+    """
+    Inputs: Current board, next player to move
+    Actions: Plays random moves starting with the given player, modifying
+    board and alternating between players until full
+    Returns: None
+    """
+    while board.check_win() == None:
+        move_coord = random.choice(board.get_empty_squares())
+        board.move(move_coord[0], move_coord[1], player)
+        player = provided.switch_player(player)
+
+def mc_update_scores(scores, board, player):
+    """
+    Inputs: Grid of scores (list of lists), completed board,
+    machine player identity.
+    Actions: Scores completed board and updates scores grid
+    Returns: None
+    """
+    # do nothing if game is draw
+    if board.check_win() == provided.DRAW:
+        return
+    else:
+        # set toggle for score handling based on whether player wins
+        if board.check_win() == player:
+            adj = 1
+        else:
+            adj = -1
+        
+        # update scores
+        for row in range(0, board.get_dim()):
+            for col in range(0, board.get_dim()):
+                if board.square(row, col) == provided.EMPTY:
+                    pass
+                elif board.square(row, col) == player:
+                    scores[row][col] += adj * SCORE_CURRENT
+                else:
+                    scores[row][col] -= adj * SCORE_OTHER
+
+def get_best_move(board, scores):
+    """
+    Inputs: Current board, grid of scores
+    Actions: Find all squares with max score and return random square
+    Returns: Tuple with coordinates of selected square
+    """
+    # get empty squares, max score
+    empty_squares = []
+    all_scores = []
+    for row in range(0, board.get_dim()):
+        for col in range(0, board.get_dim()):
+            if board.square(row, col) == provided.EMPTY:
+                empty_squares.append((row, col))
+                all_scores.append(scores[row][col])
+    max_score = max(all_scores)
+    
+    # create list of cells with max score
+    max_cells = []
+    for square in empty_squares:
+        if scores[square[0]][square[1]] == max_score:
+            max_cells.append(square)
+
+    # return random square with max score
+    return random.choice(max_cells)
+
+def mc_move(board, player, trials):
+    """
+    Inputs: Current board, player = machine player, number of trials
+    Actions: For each Monte Carlo trial, plays random game and updates
+    board score. Then gets best move for machine and returns move
+    Returns: Machine move in form of tuple
+    """
+    scores = [[0] * board.get_dim() for dummy in range(0, board.get_dim())]
+    
+    for dummy in range(0, trials):
+        board_copy = board.clone()
+        mc_trial(board_copy, player)
+        mc_update_scores(scores, board_copy, player)
+    return get_best_move(board, scores)
+
+# Test game with the console or the GUI.  Uncomment whichever 
+# you prefer.  Both should be commented out when you submit 
+# for testing to save time.
+
+# provided.play_game(mc_move, NTRIALS, False)        
+# poc_ttt_gui.run_gui(3, provided.PLAYERX, mc_move, NTRIALS, False)
