@@ -224,7 +224,7 @@ def strategy_best(cookies, cps, history, time_left, build_info):
         else:
             can_afford_list.append((item, item_ratio))
     
-    # Find most expensive item you can afford and return it
+    # Find best cps:cost ratio item you can afford and return it
     if len(can_afford_list) == 0:
         return None
     else:
