@@ -1,5 +1,8 @@
 """
-Student code for Word Wrangler game
+Submission for "Word Wrangler" 
+in "Principles of Computing (Part 2)"
+Cliff Nelson
+Created September 12, 2018
 Note: Do not use set, sorted, or sort functions!
 """
 
@@ -33,13 +36,20 @@ def intersect(list1, list2):
     Returns a new sorted list containing only elements that are in
     both list1 and list2.
     """
-    # NEED TO OPTIMIZE THIS
     intersect_list = []
-    copy1 = remove_duplicates(list1)
-    copy2 = remove_duplicates(list2)
-    for item in copy1:
-        if item in copy2:
-            intersect_list.append(item)
+    copy1 = list(list1)
+    copy2 = list(list2)
+    idx1 = 0
+    idx2 = 0
+    while idx1 < len(copy1) and idx2 < len(copy2):
+        if copy1[idx1] < copy2[idx2]:
+            idx1 += 1
+        elif copy1[idx1] > copy2[idx2]:
+            idx2 += 1
+        else:
+            intersect_list.append(copy1[idx1])
+            idx1 += 1
+            idx2 += 1
     return intersect_list
 
 # Functions to perform merge sort
@@ -130,4 +140,4 @@ def run():
     provided.run_game(wrangler)
 
 # Uncomment when you are ready to try the game
-run()
+# run()
