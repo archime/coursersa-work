@@ -1,0 +1,72 @@
+"""
+Submission for "TTT Minimax" 
+in "Principles of Computing (Part 2)"
+Cliff Nelson
+Created September 13, 2018
+"""
+
+import poc_ttt_gui
+import poc_ttt_provided as provided
+
+# Set timeout, as mini-max can take a long time
+import codeskulptor
+codeskulptor.set_timeout(60)
+
+# SCORING VALUES - DO NOT MODIFY
+SCORES = {provided.PLAYERX: 1,
+          provided.DRAW: 0,
+          provided.PLAYERO: -1}
+
+def switch_player(player):
+    """
+    Given player, returns other player.
+    """
+    if player == provided.PLAYERX:
+        return provided.PLAYERO
+    else:
+        return provided.PLAYERX
+
+def mm_move(board, player):
+    """
+    Make a move on the board. Return a tuple (score, (row, col))
+    """
+    if board.check_win() != None:
+        return SCORES[board.check_win()], (-1, -1)
+    else:
+        move_scores = []
+        move_options = board.get_empty_squares()
+        for move in move_options:
+            # Make move
+            board_copy = board.clone()
+            board_copy.move(move[0], move[1], player)
+            
+            # Call mm_move on the new board for the next player
+            mm_result = mm_move(board_copy, switch_player(player))
+            
+            # Exit early if the current player wins
+            if mm_result[0] == SCORES[player]:
+                return SCORES[player], move
+            
+            # Add move score to move_scores
+            move_scores.append(mm_result[0])
+            
+        # If here, there is no winning move. Try for draw, else any move
+        if 0 in move_scores:
+            return 0, move_options[move_scores.index(0)]
+        else:
+            return SCORES[switch_player(player)], move_options[0]
+
+def move_wrapper(board, player, trials):
+    """
+    Wrapper to allow the use of the same infrastructure that was used
+    for Monte Carlo Tic-Tac-Toe.
+    """
+    move = mm_move(board, player)
+    assert move[1] != (-1, -1), "returned illegal move (-1, -1)"
+    return move[1]
+    
+# Console test
+# provided.play_game(move_wrapper, 1, False)        
+
+# GUI test
+# poc_ttt_gui.run_gui(3, provided.PLAYERO, move_wrapper, 1, False)
