@@ -1,11 +1,15 @@
 """
-Loyd's Fifteen puzzle - solver and visualizer
+Submission for "Loyd's Fifteen puzzle - solver and visualizer" 
+in "Principles of Computing (Part 2)"
+Cliff Nelson
+Created September 13, 2018
+
 Note that solved configuration has the blank (zero) tile in upper left
 Use the arrows key to swap this tile with its neighbors
 """
 
 import poc_fifteen_gui
-import poc_simpletest
+from poc_simpletest import TestSuite
 
 class Puzzle:
     """
@@ -50,7 +54,7 @@ class Puzzle:
             ans += "\n"
         return ans
 
-    #####################################
+    ##################################################################
     # GUI methods
 
     def get_height(self):
@@ -88,7 +92,7 @@ class Puzzle:
         new_puzzle = Puzzle(self._height, self._width, self._grid)
         return new_puzzle
 
-    ########################################################
+    ##################################################################
     # Core puzzle methods
 
     def current_position(self, solved_row, solved_col):
@@ -211,10 +215,14 @@ class Puzzle:
         elif target_location[1] > target_col:
             move_string += "u" * (target_row - target_location[0])
             move_string += "r" * (target_location[1] - target_col)
-            move_string += "dllur" * (target_location[1] - target_col - 1)
-            move_string += "dlu"
-            move_string += "lddru" * (target_row - target_location[0] - 1)
-            move_string += "ld"
+            if target_location[0] < target_row - 1:
+                move_string += "dllur" * (target_location[1] - target_col - 1)
+                move_string += "dlu"
+                move_string += "lddru" * (target_row - target_location[0] - 1)
+                move_string += "ld"
+            else:
+                move_string += "ulldr" * (target_location[1] - target_col - 1)
+                move_string += "ullddruld"
         
         self.update_puzzle(move_string)
         
@@ -227,47 +235,140 @@ class Puzzle:
         Solve tile in column zero on specified row (> 1)
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        assert self.lower_row_invariant(target_row, 0)
+        
+        target_location = self.find_target_tile(target_row, 0)
+        move_string = ""
+        
+        # If target tile one position above destination, return easy case
+        if target_location == (target_row - 1, 0):
+            move_string += "u" + "r" * (self._width - 1)
+            self.update_puzzle(move_string)
+            assert self.lower_row_invariant(target_row - 1, self._width - 1)
+            return move_string
+        
+        # Get target tile into target_row - 2 with 0 below
+        if target_location[0] == target_row - 1:
+            move_string += "uu" + "r" * target_location[1] + "d"
+        elif target_location[0] == target_row - 2:
+            move_string += "u" + "r" * target_location[1]
+        else:
+            move_string += "u" * (target_row - target_location[0] - 1)
+            move_string += "r" * target_location[1]
+            if target_location[1] > 0:
+                move_string += "ulddr" * (target_row - target_location[0] - 2)
+            else:
+                move_string += "urddl" * (target_row - target_location[0] - 2)
+            
+        # Move target tile to first column
+        move_string += "lurdl" * target_location[1]
+        
+        # Move target tile to target position
+        move_string += "drulurddlu"
+        
+        # Move zero to correct position
+        move_string += "r" * (self._width - 1)
+        
+        self.update_puzzle(move_string)
+        assert self.lower_row_invariant(target_row - 1, self._width - 1)
+        return move_string
 
-    #############################################################
+    ##################################################################
     # Phase two methods
 
     def row0_invariant(self, target_col):
         """
         Check whether the puzzle satisfies the row zero invariant
-        at the given column (col > 1)
-        Returns a boolean
+        at the given column (col > 1). Returns a boolean
         """
-        # replace with your code
-        return False
+        invariant = True
+        
+        # Check zero tile at given location
+        if self.get_number(0, target_col) != 0:
+            invariant = False
+            
+        # Check positions immediately below, in cols to right, and in cols below + 1
+        for row in range(self._height):
+            for col in range(self._width):
+                if row > 1 or col > target_col or (row, col) == (1, target_col):
+                    if not self.is_solved_position(row, col):
+                        invariant = False
+        
+        return invariant
 
     def row1_invariant(self, target_col):
         """
         Check whether the puzzle satisfies the row one invariant
-        at the given column (col > 1)
-        Returns a boolean
+        at the given column (col > 1). Returns a boolean
         """
-        # replace with your code
-        return False
+        invariant = True
+        
+        # Check zero tile at given location
+        if self.get_number(1, target_col) != 0:
+            invariant = False
+        
+        # Iterate through positions in grid. For any where row > 1 OR
+        # col > target_col, check whether position is solved
+        for row in range(self._height):
+            for col in range(self._width):
+                if row > 1 or col > target_col:
+                    if not self.is_solved_position(row, col):
+                        invariant = False
+        
+        return invariant
 
     def solve_row0_tile(self, target_col):
         """
         Solve the tile in row zero at the specified column
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        assert self.row0_invariant(target_col)
+        
+        target_location = self.find_target_tile(0, target_col)
+        move_string = ""
+        
+        if target_location == (0, target_col - 1):
+            move_string += "ld"
+        elif target_location == (1, target_col - 1):
+            move_string += "lldruldrruldrulldrruld"
+        else:
+            if target_location[0] == 0:
+                move_string += "l" * (target_col - target_location[1] - 1) + "dl"
+            elif target_location[0] == 1:
+                move_string += "l" * (target_col - target_location[1]) + "d"
+            
+            move_string += "ruldr" * (target_col - target_location[1] - 2)
+            move_string += "rruldrulldrruld"
+            
+            
+        
+        self.update_puzzle(move_string)
+        assert self.row1_invariant(target_col - 1)
+        return move_string
 
     def solve_row1_tile(self, target_col):
         """
         Solve the tile in row one at the specified column
         Updates puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        
+        assert self.row1_invariant(target_col)
+        
+        target_location = self.find_target_tile(1, target_col)
+        move_string = ""
+        
+        if target_location[0] == 0:
+            move_string += "l" * (target_col - target_location[1]) + "u"
+            move_string += "rdlur" * (target_col - target_location[1])
+        elif target_location[0] == 1:
+            move_string += "l" * (target_col - target_location[1]) + "ur"
+            move_string += "rdlur" * (target_col - target_location[1] - 1)
+        
+        self.update_puzzle(move_string)
+        assert self.row0_invariant(target_col)
+        return move_string
 
-    ###########################################################
+    ##################################################################
     # Phase 3 methods
 
     def solve_2x2(self):
@@ -275,58 +376,153 @@ class Puzzle:
         Solve the upper left 2x2 part of the puzzle
         Updates the puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        assert self.row1_invariant(1)
+        
+        puzzle_copy = self.clone()
+        puzzle_copy.update_puzzle("ul")
+        move_string = "ul"
+        
+        while not puzzle_copy.row0_invariant(0):
+            puzzle_copy.update_puzzle("drul")
+            move_string += "drul"
+        
+        self.update_puzzle(move_string)
+        assert self.row0_invariant(0)
+        return move_string
 
     def solve_puzzle(self):
         """
         Generate a solution string for a puzzle
         Updates the puzzle and returns a move string
         """
-        # replace with your code
-        return ""
+        move_string = ""
+        
+        # Move zero to bottom right
+        start_location = self.find_target_tile(0, 0)
+        zero_to_corner = "d" * (self._height - start_location[0] - 1) + "r" * (self._width - start_location[1] - 1)
+        self.update_puzzle(zero_to_corner)
+        move_string += zero_to_corner
+        
+        # Solve all rows except top two
+        current_row = self._height - 1
+        current_col = self._width - 1
+        
+        for dummy_row in range(self._height - 2):
+            for dummy_col in range(self._width - 1, 0, -1):
+                move_string += self.solve_interior_tile(current_row, current_col)
+                current_col -= 1
+            move_string += self.solve_col0_tile(current_row)
+            current_row -= 1
+            current_col = self._width - 1
+         
+        # Solve remaining columns right to left until 2x2 grid remains
+        for dummy in range(self._width - 2):
+            move_string += self.solve_row1_tile(current_col)
+            move_string += self.solve_row0_tile(current_col)
+            current_col -= 1
+        
+        # Solve remaining 2x2 grid
+        move_string += self.solve_2x2()
+        
+        return move_string
 
-# Start tests
-test_suite = poc_simpletest.TestSuite()
+######################################################################
+# Tests
 
-# Test: is_solved_position
-test_isp_puzzle = Puzzle(4, 4, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 11, 10], [12, 13, 14, 15]])
-test_suite.run_test(test_isp_puzzle.is_solved_position(0, 3), True, "is_solved_position, Test 1:")
-test_suite.run_test(test_isp_puzzle.is_solved_position(3, 3), True, "is_solved_position, Test 2:")
-test_suite.run_test(test_isp_puzzle.is_solved_position(2, 2), False, "is_solved_position, Test 3:")
+def test_puzzle_class():
+    # Start tests
+    test_suite = TestSuite()
 
-# Test: find_target_tile
-test_ftt_puzzle = Puzzle(4, 4, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 11, 10], [12, 13, 14, 15]])
-test_suite.run_test(test_ftt_puzzle.find_target_tile(2, 2), (2, 3), "find_target_tile, Test 1:")
-test_suite.run_test(test_ftt_puzzle.find_target_tile(0, 2), (0, 2), "find_target_tile, Test 1:")
+    # Test: is_solved_position
+    test_isp_puzzle = Puzzle(4, 4, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 11, 10], [12, 13, 14, 15]])
+    test_suite.run_test(test_isp_puzzle.is_solved_position(0, 3), True, "is_solved_position, Test 1:")
+    test_suite.run_test(test_isp_puzzle.is_solved_position(3, 3), True, "is_solved_position, Test 2:")
+    test_suite.run_test(test_isp_puzzle.is_solved_position(2, 2), False, "is_solved_position, Test 3:")
 
-# Test: lower_row_invariant
-test_lri_puzzle1 = Puzzle(3, 3, [[4, 1, 2], [3, 0, 5], [6, 7, 8]]) # Condition 1
-test_lri_puzzle2 = Puzzle(3, 3, [[4, 7, 2], [3, 0, 5], [6, 1, 8]]) # Condition 2
-test_lri_puzzle3 = Puzzle(3, 3, [[4, 1, 5], [3, 0, 2], [6, 7, 8]]) # Condition 3
-test_suite.run_test(test_lri_puzzle1.lower_row_invariant(1, 1), True, "lower_row_invariant, Test 1:")
-test_suite.run_test(test_lri_puzzle2.lower_row_invariant(1, 1), False, "lower_row_invariant, Test 2:")
-test_suite.run_test(test_lri_puzzle3.lower_row_invariant(1, 1), False, "lower_row_invariant, Test 3:")
+    # Test: find_target_tile
+    test_ftt_puzzle = Puzzle(4, 4, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 11, 10], [12, 13, 14, 15]])
+    test_suite.run_test(test_ftt_puzzle.find_target_tile(2, 2), (2, 3), "find_target_tile, Test 1:")
+    test_suite.run_test(test_ftt_puzzle.find_target_tile(0, 2), (0, 2), "find_target_tile, Test 1:")
 
-# Test: solve_interior_tile
-test_sit_puzzle1 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 13, 1, 1], [1, 0, 14, 15]])
-test_sit_puzzle2 = Puzzle(4, 4, [[1, 13, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 0, 14, 15]])
-test_sit_puzzle3 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [15, 1, 1, 0]])
-test_sit_puzzle4 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 15, 0]])
-test_sit_puzzle5 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 14, 1, 1], [1, 1, 0, 15]])
-test_sit_puzzle6 = Puzzle(4, 4, [[14, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 0, 15]])
-test_sit_puzzle7 = Puzzle(4, 4, [[1, 1, 1, 13], [1, 1, 1, 1], [1, 1, 1, 1], [1, 0, 14, 15]])
-test_suite.run_test(test_sit_puzzle1.solve_interior_tile(3, 1), "uld", "solve_interior_puzzle, Test 1:")
-test_suite.run_test(test_sit_puzzle2.solve_interior_tile(3, 1), "uuulddrulddruld", "solve_interior_puzzle, Test 2:")
-test_suite.run_test(test_sit_puzzle3.solve_interior_tile(3, 3), "lllurrdlurrdl", "solve_interior_puzzle, Test 3:")
-test_suite.run_test(test_sit_puzzle4.solve_interior_tile(3, 3), "l", "solve_interior_puzzle, Test 4:")
-test_suite.run_test(test_sit_puzzle5.solve_interior_tile(3, 2), "lurdl", "solve_interior_puzzle, Test 5:")
-test_suite.run_test(test_sit_puzzle6.solve_interior_tile(3, 2), "lluuurddlurddlurdlurrdl", "solve_interior_puzzle, Test 6:")
-test_suite.run_test(test_sit_puzzle7.solve_interior_tile(3, 1), "uuurrdllurdlulddrulddruld", "solve_interior_puzzle, Test 7:")
+    # Test: lower_row_invariant
+    test_lri_puzzle1 = Puzzle(3, 3, [[4, 1, 2], [3, 0, 5], [6, 7, 8]]) # Condition 1
+    test_lri_puzzle2 = Puzzle(3, 3, [[4, 7, 2], [3, 0, 5], [6, 1, 8]]) # Condition 2
+    test_lri_puzzle3 = Puzzle(3, 3, [[4, 1, 5], [3, 0, 2], [6, 7, 8]]) # Condition 3
+    test_suite.run_test(test_lri_puzzle1.lower_row_invariant(1, 1), True, "lower_row_invariant, Test 1:")
+    test_suite.run_test(test_lri_puzzle2.lower_row_invariant(1, 1), False, "lower_row_invariant, Test 2:")
+    test_suite.run_test(test_lri_puzzle3.lower_row_invariant(1, 1), False, "lower_row_invariant, Test 3:")
 
-# Test Results
-test_suite.report_results()
+    # Test: solve_interior_tile
+    test_sit_puzzle1 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 13, 1, 1], [1, 0, 14, 15]])
+    test_sit_puzzle2 = Puzzle(4, 4, [[1, 13, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 0, 14, 15]])
+    test_sit_puzzle3 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [15, 1, 1, 0]])
+    test_sit_puzzle4 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 15, 0]])
+    test_sit_puzzle5 = Puzzle(4, 4, [[1, 1, 1, 1], [1, 1, 1, 1], [1, 14, 1, 1], [1, 1, 0, 15]])
+    test_sit_puzzle6 = Puzzle(4, 4, [[14, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 0, 15]])
+    test_sit_puzzle7 = Puzzle(4, 4, [[1, 1, 1, 13], [1, 1, 1, 1], [1, 1, 1, 1], [1, 0, 14, 15]])
+    test_suite.run_test(test_sit_puzzle1.solve_interior_tile(3, 1), "uld", "solve_interior_puzzle, Test 1:")
+    test_suite.run_test(test_sit_puzzle2.solve_interior_tile(3, 1), "uuulddrulddruld", "solve_interior_puzzle, Test 2:")
+    test_suite.run_test(test_sit_puzzle3.solve_interior_tile(3, 3), "lllurrdlurrdl", "solve_interior_puzzle, Test 3:")
+    test_suite.run_test(test_sit_puzzle4.solve_interior_tile(3, 3), "l", "solve_interior_puzzle, Test 4:")
+    test_suite.run_test(test_sit_puzzle5.solve_interior_tile(3, 2), "lurdl", "solve_interior_puzzle, Test 5:")
+    test_suite.run_test(test_sit_puzzle6.solve_interior_tile(3, 2), "lluuurddlurddlurdlurrdl", "solve_interior_puzzle, Test 6:")
+    test_suite.run_test(test_sit_puzzle7.solve_interior_tile(3, 1), "uuurrdllurdlulddrulddruld", "solve_interior_puzzle, Test 7:")
 
+    # Test: solve_col0_tile
+    test_sc0t1 = Puzzle(5, 5, [[1, 1, 1, 1, 20], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [0, 21, 22, 23, 24]])
+    test_sc0t2 = Puzzle(5, 5, [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 20, 1], [0, 21, 22, 23, 24]])
+    test_sc0t3 = Puzzle(5, 5, [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 20], [1, 1, 1, 1, 1], [0, 21, 22, 23, 24]])
+    test_sc0t4 = Puzzle(5, 5, [[1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [20, 1, 1, 1, 1], [0, 21, 22, 23, 24]])
+    test_sc0t5 = Puzzle(5, 5, [[20, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [0, 21, 22, 23, 24]])
+    test_suite.run_test(test_sc0t1.solve_col0_tile(4), "uuurrrrulddrulddrlurdllurdllurdllurdldrulurddlurrrr", "solve_col0_tile, Test 1:")
+    test_suite.run_test(test_sc0t2.solve_col0_tile(4), "uurrrdlurdllurdllurdldrulurddlurrrr", "solve_col0_tile, Test 2:")
+    test_suite.run_test(test_sc0t3.solve_col0_tile(4), "urrrrlurdllurdllurdllurdldrulurddlurrrr", "solve_col0_tile, Test 3:")
+    test_suite.run_test(test_sc0t4.solve_col0_tile(4), "urrrr", "solve_col0_tile, Test 4:")
+    test_suite.run_test(test_sc0t5.solve_col0_tile(4), "uuuurddlurddldrulurddlurrrr", "solve_col0_tile, Test 5:")
+    
+    # Test: row0_invariant
+    test_row0_invariant1 = Puzzle(3, 3, [[1, 0, 2], [3, 4, 5], [6, 7, 8]])
+    test_row0_invariant2 = Puzzle(3, 3, [[1, 0, 2], [4, 3, 5], [6, 7, 8]])
+    test_suite.run_test(test_row0_invariant1.row0_invariant(1), True, "row0_invariant, Test 1:")
+    test_suite.run_test(test_row0_invariant2.row0_invariant(1), False, "row0_invariant, Test 2:")
+    
+    # Test: row1_invariant
+    test_row1_invariant1 = Puzzle(3, 3, [[4, 1, 2], [3, 0, 5], [6, 7, 8]])
+    test_row1_invariant2 = Puzzle(3, 3, [[4, 0, 2], [3, 1, 5], [6, 7, 8]])
+    test_row1_invariant3 = Puzzle(3, 3, [[4, 1, 2], [3, 0, 5], [7, 6, 8]])
+    test_suite.run_test(test_row1_invariant1.row1_invariant(1), True, "row1_invariant, Test 1:")
+    test_suite.run_test(test_row1_invariant2.row1_invariant(1), False, "row1_invariant, Test 2:")
+    test_suite.run_test(test_row1_invariant3.row1_invariant(1), False, "row1_invariant, Test 3:")
+    
+    # Test: solve_row0_tile
+    test_sr0t1 = Puzzle(4, 4, [[1, 1, 3, 0], [1, 1, 1, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_sr0t2 = Puzzle(4, 4, [[1, 1, 1, 0], [1, 1, 3, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_sr0t3 = Puzzle(4, 4, [[3, 1, 1, 0], [1, 1, 1, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_sr0t4 = Puzzle(4, 4, [[1, 1, 1, 0], [3, 1, 1, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_suite.run_test(test_sr0t1.solve_row0_tile(3), "ld", "solve_row0_tile, Test 1:")
+    test_suite.run_test(test_sr0t2.solve_row0_tile(3), "lldruldrruldrulldrruld", "solve_row0_tile, Test 2:")
+    test_suite.run_test(test_sr0t3.solve_row0_tile(3), "lldlruldrrruldrulldrruld", "solve_row0_tile, Test 3:")
+    test_suite.run_test(test_sr0t4.solve_row0_tile(3), "llldruldrrruldrulldrruld", "solve_row0_tile, Test 4:")
+    
+    # Test: solve_row1_tile
+    test_sr1t1 = Puzzle(4, 4, [[7, 1, 2, 3], [4, 5, 6, 0], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_sr1t2 = Puzzle(4, 4, [[4, 1, 2, 3], [7, 5, 6, 0], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_suite.run_test(test_sr1t1.solve_row1_tile(3), "lllurdlurrdlurrdlur", "solve_row1_tile, Test 1:")
+    test_suite.run_test(test_sr1t2.solve_row1_tile(3), "lllurrdlurrdlur", "solve_row1_tile, Test 2:")
+    
+    # Test: solve_2x2
+    test_s2x2_1 = Puzzle(4, 4, [[1, 5, 2, 3], [4, 0, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_s2x2_2 = Puzzle(4, 4, [[5, 4, 2, 3], [1, 0, 6, 7], [8, 9, 10, 11], [12, 13, 14, 15]])
+    test_suite.run_test(test_s2x2_1.solve_2x2(), "ul", "solve_2x2, Test 1:")
+    test_suite.run_test(test_s2x2_2.solve_2x2(), "uldrul", "solve_2x2, Test 2:")
+    
+    # Test Results
+    test_suite.report_results()
+
+# Run tests
+test_puzzle_class()
+
+######################################################################
 # Start interactive simulation
 puzzle = Puzzle(4, 4)
 poc_fifteen_gui.FifteenGUI(puzzle)
