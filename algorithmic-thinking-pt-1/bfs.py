@@ -93,21 +93,21 @@ class TestFunctions(unittest.TestCase):
     
     def test_bfs_visited(self):
         test_ugraph = {0: {1}, 1: {0, 2}, 2: {1}, 3: {}}
-        self.assertTrue(bfs_visited(test_ugraph, 0), {0, 1, 2})
-        self.assertTrue(bfs_visited(test_ugraph, 3), {3})
+        self.assertEqual(bfs_visited(test_ugraph, 0), {0, 1, 2})
+        self.assertEqual(bfs_visited(test_ugraph, 3), {3})
 
     def test_cc_visited(self):
         test_ugraph = {0: {1}, 1: {0, 2}, 2: {1}, 3: {}}
-        self.assertTrue(cc_visited(test_ugraph), [{3}, {0, 1, 2}])
+        self.assertEqual(cc_visited(test_ugraph), [{0, 1, 2}, {3}])
 
     def test_largest_cc_size(self):
         test_ugraph = {0: {1}, 1: {0, 2}, 2: {1}, 3: {}}
-        self.assertTrue(largest_cc_size(test_ugraph), 3)
+        self.assertEqual(largest_cc_size(test_ugraph), 3)
  
     def test_compute_resilience(self):
         test_ugraph = {0: {1}, 1: {0, 2}, 2: {1}, 3: {}}
         test_attack_order = [1, 3]
-        self.assertTrue(compute_resilience(test_ugraph, test_attack_order), [3, 1, 1])
+        self.assertEqual(compute_resilience(test_ugraph, test_attack_order), [3, 1, 1])
 
 ###################################
 # Run tests
