@@ -6,6 +6,7 @@ September 23, 2018
 """
 
 import unittest
+import cna_provided as provided
 from collections import deque
 
 
@@ -74,15 +75,10 @@ def compute_resilience(ugraph, attack_order):
     the graph after removal of the first k nodes in attack_order. First entry
     is the size of the largest connected component in the original graph
     """
-    graph_copy = dict()
-    for key, value in ugraph.items():
-        graph_copy[key] = value.copy()
+    graph_copy = provided.copy_graph(ugraph)
     largest_cc_list = [largest_cc_size(graph_copy)]
     for node in attack_order:
-        del graph_copy[node]
-        for key in graph_copy.keys():
-            if node in graph_copy[key]:
-                graph_copy[key].remove(node)
+        provided.delete_node(graph_copy, node)
         largest_cc_list.append(largest_cc_size(graph_copy))
     return largest_cc_list
 

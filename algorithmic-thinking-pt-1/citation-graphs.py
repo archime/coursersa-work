@@ -10,7 +10,6 @@ September 19, 2018
 
 import urllib.request
 import matplotlib.pyplot as plt
-import numpy as np
 import random
 
 ###################################
