@@ -174,8 +174,8 @@ er_graph_resilience = bfs.compute_resilience(er_graph, attack_order_er)
 upa_graph_resilience = bfs.compute_resilience(upa_graph, attack_order_upa)
 
 # Plots
-fig = plt.figure('Network Resilience - Random Attack Order')
-plt.title('Network Resilience - Random Attack Order')
+fig = plt.figure('Network Resilience - Random Attack Order (Desktop)')
+plt.title('Network Resilience - Random Attack Order (Desktop)')
 plt.xlabel('Number of Nodes Removed')
 plt.ylabel('Largest Connected Component')
 
@@ -241,8 +241,8 @@ for n in input_args:
     fast_running_times.append(end_time - start_time)
 
 # Plot
-fig3 = plt.figure('Running Times')
-plt.title('Running Times')
+fig3 = plt.figure('Running Times (Desktop)')
+plt.title('Running Times (Desktop)')
 plt.xlabel('Number of Nodes in UPA Graph, m = 5')
 plt.ylabel('Seconds')
 
@@ -271,8 +271,8 @@ targeted_er_graph_resilience = bfs.compute_resilience(er_graph, targeted_attack_
 targeted_upa_graph_resilience = bfs.compute_resilience(upa_graph, targeted_attack_order_upa)
 
 # Plots
-fig = plt.figure('Network Resilience - Targeted Attack Order')
-plt.title('Network Resilience - Targeted Attack Order')
+fig = plt.figure('Network Resilience - Targeted Attack Order (Desktop)')
+plt.title('Network Resilience - Targeted Attack Order (Desktop)')
 plt.xlabel('Number of Nodes Removed')
 plt.ylabel('Largest Connected Component')
 
