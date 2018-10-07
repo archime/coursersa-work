@@ -6,7 +6,7 @@ modified for desktop Python 3
 
 import alg_cluster
 import alg_clusters_matplotlib
-import clustering as alg_project3_solution
+import clustering
 import math
 import matplotlib.pyplot as plt
 import random
@@ -71,31 +71,31 @@ def sequential_clustering(singleton_list, num_clusters):
 # Code to load cancer data, compute a clustering and 
 # visualize the results
 
-def visualize_data(method=None, display_centers=False):
+def visualize_data(cluster_input, data, method=None, display_centers=False):
     """
     Load a data table, compute a list of clusters and 
     plot a list of clusters
 
     Set DESKTOP = True/False to use either matplotlib or simplegui
     """
-    data_table = load_data_table(DATA_3108_URL)
+    data_table = load_data_table(data)
     
     singleton_list = []
     for line in data_table:
         singleton_list.append(alg_cluster.Cluster(set([line[0]]), line[1], line[2], line[3], line[4]))
         
     if method == None:
-        cluster_list = sequential_clustering(singleton_list, 15)	
+        cluster_list = sequential_clustering(singleton_list, cluster_input)	
         print("Displaying", len(cluster_list), "sequential clusters")
     elif method == 'hierarchical_clustering':
-        cluster_list = alg_project3_solution.hierarchical_clustering(singleton_list, 9)
+        cluster_list = clustering.hierarchical_clustering(singleton_list, cluster_input)
         print("Displaying", len(cluster_list), "hierarchical clusters")
     elif method == 'kmeans_clustering':
-        cluster_list = alg_project3_solution.kmeans_clustering(singleton_list, 9, 5)	
+        cluster_list = clustering.kmeans_clustering(singleton_list,
+                                                    cluster_input[0],
+                                                    cluster_input[1])
         print("Displaying", len(cluster_list), "k-means clusters")
     else:
         print("ERROR: method entered into visualize_data not recognized")
 
     alg_clusters_matplotlib.plot_clusters(data_table, cluster_list, display_centers)
-    
-visualize_data()

@@ -3,16 +3,6 @@ Project #3: Closest Pairs & Clustering Algorithms
 Algorithmic Thinking (Part 2)
 Cliff Nelson
 October 2, 2018
-
-Student will implement five functions:
-
-[X] slow_closest_pair(cluster_list)
-[X] fast_closest_pair(cluster_list)
-[X] closest_pair_strip(cluster_list, horiz_center, half_width)
-[X] hierarchical_clustering(cluster_list, num_clusters)
-[X] kmeans_clustering(cluster_list, num_clusters, num_iterations)
-
-where cluster_list is a 2D list of clusters in the plane
 """
 
 import alg_cluster
@@ -63,7 +53,8 @@ def closest_pair_strip(cluster_list, horiz_center, half_width):
     that a cluster can lie from the center line)
 
     Output: tuple of the form (dist, idx1, idx2) where the centers of the clusters
-    cluster_list[idx1] and cluster_list[idx2] lie in the strip and have minimum distance dist.       
+    cluster_list[idx1] and cluster_list[idx2] lie in the strip and have minimum
+    distance dist.       
     """
 
     indices_in_strip = [i for i, x in enumerate(cluster_list) if abs(x.horiz_center() - horiz_center) < half_width]
@@ -73,7 +64,9 @@ def closest_pair_strip(cluster_list, horiz_center, half_width):
     for idx_u in range(0, num_clusters-1):
         for idx_v in range(idx_u+1, min(idx_u+4, num_clusters)):
             dist, idx_i, idx_j = min((dist, idx_i, idx_j),
-                                     pair_distance(cluster_list, indices_in_strip[idx_u], indices_in_strip[idx_v]))
+                                     pair_distance(cluster_list,
+                                                   indices_in_strip[idx_u],
+                                                   indices_in_strip[idx_v]))
     return (dist, idx_i, idx_j)
 
 def fast_closest_pair(cluster_list):
@@ -142,7 +135,8 @@ def kmeans_clustering(cluster_list, num_clusters, num_iterations):
     """
 
     # Copy cluster list and sort by descending total population to get initial centers
-    cluster_list_copy = cluster_list[:] # Sliced instead of list.copy() for Python 2 compatibility
+    cluster_list_copy = cluster_list[:]
+    # Above sliced instead of list.copy() for Python 2 compatibility
     cluster_list_copy.sort(key = lambda x: -x.total_population())
     center_positions = [(cluster_list_copy[idx].horiz_center(),
                          cluster_list_copy[idx].vert_center()) for idx in range(num_clusters)]
