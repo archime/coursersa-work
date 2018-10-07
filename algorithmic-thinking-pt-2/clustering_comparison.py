@@ -3,10 +3,6 @@ Application #3: Comparison of Clustering Algorithms
 Algorithmic Thinking (Part 2)
 Cliff Nelson
 October 3, 2018
-
-TODO
-[ ] Q10
-[ ] Q11
 """
 
 import alg_cluster
