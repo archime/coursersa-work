@@ -10,5 +10,5 @@ Projects from Coursera courses
 6. [Algorithmic Thinking (Part 2)](https://www.coursera.org/learn/algorithmic-thinking-2/) (IN-PROCESS)
 
 ## Running Files
-Courses 1-4 written to run in [Codeskulptor](http://www.codeskulptor.org/)
+Courses 1-4 written to run in [Codeskulptor](http://www.codeskulptor.org/)\
 Courses 5+ written to run in desktop Python
